@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="static/iconfont/iconfont.css">
+    <script src="socket.io/socket.io.js"></script>
+    <title>Document</title>
+    <style>
+    </style>
+</head>
+
+<body>
+    <div id="zzc">
+        <div class="zzc_box">
+            <h3>请选择头像和用户昵称</h3>
+            <div class="zzc_body">
+                <div class="icons_box">
+                    <i class="icon iconfont icon-kongbudianyingguiwawahuazi"></i>
+                    <i class="icon iconfont icon-kongbudianyinghaoxingqiwumianjuren"></i>
+                    <i class="icon iconfont icon-kongbudianyingdiyushizhe"></i>
+                    <i class="icon iconfont icon-kongbudianyingdianjujinghun"></i>
+                    <i class="icon iconfont icon-kongbudianyinghanniba"></i>
+                    <i class="icon iconfont icon-kongbudianyinghulijing"></i>
+                    <i class="icon iconfont icon-kongbudianyingjingshengjianjiao"></i>
+                    <i class="icon iconfont icon-kongbudianyingkulou"></i>
+                    <i class="icon iconfont icon-kongbudianyingheimao"></i>
+                    <i class="icon iconfont icon-kongbudianyinglangren"></i>
+                    <i class="icon iconfont icon-kongbudianyingnvwu"></i>
+                    <i class="icon iconfont icon-kongbudianyingxixiegui"></i>
+                </div>
+                <p class="username_ipt">请输入你的昵称：
+                    <input id="usersname_ipt" type="text" placeholder="请输入昵称">
+                </p>
+                <div>
+                    <i id="usericon" class="icon iconfont icon-kongbudianyingguiwawahuazi"></i>
+                </div>
+                <p class="into_btn">
+                    <button id="into_btn" style="display: none">点击进入聊天室</button>
+                </p>
+            </div>
+        </div>
+    </div>
+    <header>
+        <h1>欢迎进入群聊</h1>
+    </header>
+    <div class="box_page">
+        <div class="box">
+            <div class="top" id="tops">
+                <div id="topspage">
+
+                </div>
+            </div>
+            <div class="section">
+                <span style="color:white"> 先选择默认聊天字体颜色</span>
+                <input type="color" id='color'>
+                <input type="file" id='file'>
+                <input type="range" id='range' min="10" max="20" value="15">
+                <input type="button" id="qk" value="重置">
+                <input type="button" id='clear' value="清空">
+            </div>
+            <div class="bottom">
+                <div class="left">
+                    <textarea id="val"></textarea>
+                </div>
+                <div class="right">
+                    <button id='send'>Enter</button>
+                </div>
+            </div>
+            <div class="my_tag">
+                我的：
+                <i id="usericon" class="icon iconfont icon-kongbudianyingguiwawahuazi"></i>
+                <b id="usersname_us"></b>
+            </div>
+        </div>
+        <div class="ulist_page">
+            <h4 style="text-align:center">用户列表</h4>
+            <div id="ulist_box">
+
+            </div>
+        </div>
+
+    </div>
+    </div>
+    <script>
+
+
+        var socketIo = io.connect('http://169.254.106.109:8000');
+        var val = document.querySelector('#val');
+        var tops = document.querySelector('#tops');
+        var topspage = document.querySelector('#topspage');
+        var send = document.querySelector('#send');
+        var colors = document.querySelector('#color');
+        var reset = document.getElementById('qk');
+        var clear = document.getElementById('clear');
+        var range = document.getElementById('range');
+        var file1 = document.getElementById('file');
+
+        var iconsBox = document.querySelector('.icons_box');
+        var usericon = document.getElementById('usericon');
+        var intobtn = document.getElementById('into_btn');
+        var usersnameipt = document.querySelector('#usersname_ipt');
+        var zzc = document.getElementById('zzc');
+        var usersname_us = document.getElementById('usersname_us');
+        var ulist_box = document.querySelector("#ulist_box");
+        var color = 'red';
+        var size = 15;
+        var filesF = {};
+        var name = '';
+        var names = '';
+        var cookeis = document.cookie;
+
+        function setCookie(cname, cvalue, exdays) {
+            var d = new Date();
+            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+            var expires = "expires=" + d.toUTCString();
+            document.cookie = cname + "=" + cvalue + "; " + expires;
+        }
+        //清除cookie 
+        function clearCookie(name) {
+            setCookie(name, "", -1);
+        }
+        iconsBox.addEventListener('click', function (event) {
+            console.log(event.target.className);
+            if (event.target.className !== 'icons_box') {
+                usericon.className = event.target.className;
+            }
+        })
+        usersnameipt.addEventListener('input', function (event) {
+            if (event.target.value && event.target.value !== ' ') {
+                intobtn.style.display = 'inline-block';
+            }
+        })
+        intobtn.addEventListener('click', function (event) {
+            zzc.style.display = 'none';
+            usersname_us.innerHTML = usersnameipt.value;
+            var span = document.createElement('span');
+            name = usersnameipt.value;
+            names = `<span style='color:${color}; height:${size}'px'>${name}</span>`;
+            socketIo.emit('toserver', `<p class="userstags"><span class="userstag">☻欢迎 <i class="${usericon.className}"></i>${names} 进入聊天室</span></p>`);
+            socketIo.emit('toserver', `<span name="ulist"><i class="${usericon.className}"></i>${names}</span>`);
+            // setCookie(name, usericon.className,0.01);
+
+        })
+        file1.addEventListener('change', function () {
+            filesF = this.files[0];
+            var readers = new FileReader();
+            readers.readAsDataURL(filesF);
+            readers.onload = function () {
+                socketIo.emit('toserver', `<p style="height:${size}px;font-size:${size}px"><i class="${usericon.className}"></i>${names}${names}说:</p>`);
+                socketIo.emit('toserver', this.result);
+            }
+        });
+        range.addEventListener('change', function () {
+            size = range.value;
+            console.log(size * 1);
+        });
+        clear.addEventListener('click', function () {
+            topspage.innerHTML = '';
+        });
+        reset.addEventListener('click', function () {
+            location.reload();
+        });
+        colors.addEventListener('change', function () {
+            color = colors.value;
+            console.log(color)
+        });
+        send.addEventListener('click', function () {
+            if (val.value != ' ' && val.value.length > 0) {
+                socketIo.emit('toserver', `<p font-size:${size}px; color: ${color}"><i class="${usericon.className}"></i>${names}说: <br /><span style="margin-left: 50px; color: ${color}">${val.value}</span></p>`);
+            }
+            val.value = "";
+            var topspageH = topspage.offsetHeight;
+            var boxh = tops.offsetHeight;
+            var topscrollH = tops.offsetHeight;
+            tops.scrollTop = topspageH - boxh + topscrollH;
+
+        });
+        socketIo.on('connect', () => {
+            socketIo.on('toclient', (msg) => {
+
+                var li = document.createElement('li');
+                var p = document.createElement('p');
+                if (msg.slice(0, 11) === 'data:image/') {
+                    var img = document.createElement('img');
+                    img.src = msg;
+                    img.style.width = '200px';
+                    li.appendChild(img);
+                    topspage.appendChild(li);
+                } else if (msg.slice(1, 5) === 'span') {
+                    p.innerHTML = msg;
+                    ulist_box.appendChild(p);
+                } else {
+                    li.innerHTML = msg;
+                    topspage.appendChild(li);
+                }
+            });
+        });
+        document.addEventListener('keyup', (event)=>{
+            if(event.keyCode === 13){
+                send.click();
+            }
+        })
+    </script>
+</body>
+
+</html>
